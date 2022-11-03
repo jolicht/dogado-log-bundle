@@ -1,0 +1,28 @@
+services:
+  dogado_log.monolog_gelf_handler:
+    class: Monolog\Handler\GelfHandler
+    arguments:
+      - '@dogado_log.gelf_publisher'
+      - 'debug' #monolog config is ignored with custom service level has to be redefined here (default : debug), you should probably use parameters eg: '%gelf_level%'
+
+  dogado_log.gelf_publisher:
+    class: Gelf\Publisher
+    arguments: [ '@dogado_log.gelf_ignore_error_transport' ]
+
+  dogado_log.gelf_ignore_error_transport:
+    class: Gelf\Transport\IgnoreErrorTransportWrapper
+    arguments: [ '@dogado_log.gelf_transport' ]
+
+  dogado_log.gelf_transport:
+    class: Gelf\Transport\UdpTransport # or Tcp, Amp, Http,...
+    arguments:
+      - 'example.net'
+      - 12201 # udp: 12201, tcp: 5555
+
+
+  Jolicht\DogadoLogBundle\DefaultContextProcessor:
+    arguments:
+      - '@kernel'
+      - 'some-service-name'
+    tags:
+      - { name: monolog.processor }
